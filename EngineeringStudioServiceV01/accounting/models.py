@@ -68,9 +68,7 @@ class Item(models.Model):
 
     def save(self, *args, **kwargs):
         super(Item, self).save(*args, **kwargs)
-        # ItemPlaceQuantity.objects.update_or_create(item=self, place='Нерозміщено', quantity=0, owner='Defir')
-
-
+        # ItemPlace.objects.update_or_create(item=self, place='Нерозміщено', quantity=0, owner='Defir')
 
 
 class OrderStatus(models.Model):
@@ -103,7 +101,7 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(blank=False, default=1)
 
     class Meta:
-        unique_together = (('item', 'order', ),)
+        unique_together = (('item', 'order', 'supplier'),)
 
     def __str__(self):
         return f'Table name: {self.table_name}, Object id: {self.object_id}'
@@ -114,7 +112,7 @@ class Owner(models.Model):
 
     def __str__(self):
         return self.name
-class ItemPlaceQuantity(models.Model):
+class ItemPlace(models.Model):
     warehouse_flow = models.ForeignKey(WarehouseFlow, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     place = models.ForeignKey(Place, on_delete=models.CASCADE)
@@ -127,7 +125,7 @@ class ItemPlaceQuantity(models.Model):
 
     def get_total_quantity(item):
         # метод get_total_quantity дозволяє отримати кількість всіх Item в одному місці
-        return ItemPlaceQuantity.objects.filter(item=item).aggregate(Sum('quantity'))['quantity__sum']
+        return ItemPlace.objects.filter(item=item).aggregate(Sum('quantity'))['quantity__sum']
 
     def __str__(self):
         return f'Item: {self.item}, Object place: {self.place}'
@@ -252,13 +250,6 @@ class Nut(models.Model):
         return self.name
 
 
-# class OrderNut(models.Model):
-#     order = models.ForeignKey(Order, on_delete=models.CASCADE, blank=False)
-#     nut = models.ForeignKey(Nut, on_delete=models.CASCADE, blank=False)
-#     quantity = models.PositiveIntegerField()
-#
-#     def __str__(self):
-#         return f'{self.order} - {self.nut} - {self.quantity}'
 
 
 class Bolt(models.Model):
@@ -292,3 +283,12 @@ class Bolt(models.Model):
 #
 #     def __str__(self):
 #         return f'{self.order} - {self.bolt} - {self.quantity}'
+
+
+# class OrderNut(models.Model):
+#     order = models.ForeignKey(Order, on_delete=models.CASCADE, blank=False)
+#     nut = models.ForeignKey(Nut, on_delete=models.CASCADE, blank=False)
+#     quantity = models.PositiveIntegerField()
+#
+#     def __str__(self):
+#         return f'{self.order} - {self.nut} - {self.quantity}'

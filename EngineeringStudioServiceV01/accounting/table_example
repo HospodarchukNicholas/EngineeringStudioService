@@ -1,0 +1,69 @@
+Circuit breaker	Автоматичний вимикач 1P, крива С, 16А	1-С16	Schneider Electric	1
+Circuit breaker	Автоматичний вимикач 1P, крива С, 40А	1-С40	Schneider Electric	1
+Circuit breaker	Автоматичний вимикач 1P, крива С, 63А	1-С63	Schneider Electric	1
+Switch & Light	Кнопка IEK SB-7 "Пуск" d22 мм зелена 230В 1 перекидний контакт	BBT40-SB7-K06	IEK	1
+Switch & Light	Кнопка IEK SB-7 "Стоп" d22 мм червона 230В 1 перекидний контакт	BBT40-SB7-K04	IEK	1
+Switch & Light	Перемикач IEK AC-22 на 2 фіксованих положення "I-O" чорний	BSW10-AC-2-K02	IEK	1
+Switch & Light	Лампа IEK AD-22DS LED-матриця d22 мм біла 230В AC	BLS10-ADDS-230-K01	IEK	1
+Switch & Light	Лампа IEK AD-22DS LED-матриця d22 мм жовта 230В AC	BLS10-ADDS-230-K05	IEK	1
+Switch & Light	Лампа IEK AD-22DS LED-матриця d22 мм зелена 230В AC	BLS10-ADDS-230-K06	IEK	1
+Clamp	Клемма на 2 провода с нажимными рычагами	222-412	WAGO	2
+Clamp	Колодка клемна подільна 10А 10 кв.мм, рейка з 12 модулів	e.tc.stand.12.10	E.NEXT	22
+Clamp	Клемма на 2 провода с нажимными рычагами	WGn-2	Takel	1
+Sensor	Датчик герконовий, циліндричний М8, провід 2 метр	FC-08	Fotek	1
+Connector	Конектор Power M23, 8Pin Female Plug	M23 8Pin Female	Arvin	2
+Connector	Конектор Signal M23, 17Pin Female Plug, Counterclockwise	M23 17Pin Female P	Arvin	2
+Device	2D LiDAR sensor for mapping and AGV, 25m 5-30Hz	LakiBeam1	RICHBEAM	1
+Terminal	Наконечник-гильза с изолированным фланцем 1.5мм2, 100pcs/pack	Е1508 RED	ІЕК	200
+Terminal	Наконечник-гильза с изолированным фланцем 2.5мм2, 100pcs/pack	Е2508 YELLOW	ІЕК	100
+Terminal	Наконечник-гильза с изолированным фланцем 0.5мм2, 100pcs/pack	Е0508 ORANGE	ІЕК	200
+Cable	Провід РПШ 7х2.5, гумовий	РПШ 7х2.5	ЗЗКМ	5
+Cable	Провід МКЕШнг 10х0,75 не луджений (8544)	МКЕШнг 10х0.75	ЗЗКМ	5
+Cable	Провід ПГВА 0,5 білий	ПГВА 0.5	ЗЗКМ	100
+Cable	Кабель ПВС 4х0.75	ПВС 4х0.75	Electro Cable	4,5
+Cable	Провід ПВ3 2.5мм, червоний	ПВ3 2.5	ЗЗКМ	5
+Cable	Провід ПВ3 1мм, коричневий	ПВ3 1	ЗЗКМ	9
+Cable	Провід ПВ3 0.5мм, зелений	ПВ3 0.5	ЗЗКМ	9
+Shield	Бокс зовнішньої установки IEK ЩРН-П-8	ЩРН-П-8	"	IEK"	1
+Shield	Бокс + Лічильник + Автомат. вимикач 16А			1
+Accessories	Трубка термоусаджувальна, чорна поліолефін, 16/8, 1метр	e.termo.stand.16/8.black	E.NEXT	1
+Device	Servomotorgear, 6000rpn, 3pole, 48VDC 15A	HMD06-011-048-60-BPM2SW23WE0612	Heidrive	2
+Device	Servo drive, Motor controller up to 80A, CAN interface	mcDSA-F32	miControl	2
+Device	Plug-in connector, комплект		miControl	2
+Sensor	Micro Load Cell, 500kg, 5-10V	ATO-LC-BU04	ATO	2
+Device	Load Cell Transmitter, Output 0-5V/0-10V/4-20mA/0-20mA, DC 5-15V	ATO-LCTR-OA 4-20mA	ATO	2
+Sensor	Laser distance sensor, Cable 4 pin 2m , IO-Link, 30-300mm 860 nm, -25…+60 °C IP 67	O300.DI-GM1J.72CU	Baumer	1
+Device	DC-DC Buck Converter, 48V to 24V	ATOWG-48S2415 (15A, 360W)	ATO	2
+Components	Resistor pack 1/4W 1% resistor, 20pcs, all  30  values in one package.	10Ω-1M, 1/4W  1%	Aliexpress	600
+Components	Diode	20A10	Aliexpress	18
+Components	LED Diode, 3mm, 20 mA, Red: 1.9V-2.1V	LED RED	Aliexpress	100
+Components	LED Diode, 3mm, 20 mA, Yellow: 1.9V-2.1V	LED YELLOW	Aliexpress	100
+Components	LED Diode, 3mm, 20 mA, Blue:3.0V-3.2V	LED BLUE	Aliexpress	92
+Components	LED Diode, 3mm, 20 mA, Green: 2.1V-3.0V	LED GREEN	Aliexpress	100
+Components	LED Diode, 3mm, 20 mA, White:3.0V-3.2V	LED WHITE	Aliexpress	100
+Sensor	Microswitch, NO	G5W11	Aliexpress	20
+Connector	DC Power Female DC socket, 2.1x5.5mm, Black	DC Socket 5.5	Aliexpress	5
+Connector	DC Power Male Plug Jack, 2.5x5.5x9mm, Black	DC Jack 5.5	Aliexpress	5
+Connector	Automotive Electrical wire Connector, 2-pin Male+Female, 2.0mm2, White	2-pin 2.8mm	Aliexpress	20
+Connector	Automotive Electrical wire Connector, 3-pin Male+Female, 2.0mm2, White	3-pin 2.8mm	Aliexpress	10
+Connector	Connector Plug 2-pin Male+Female,	2-pin JST	Aliexpress	50
+Connector	Plastic Handle Test Probe Metal Alligator Clips, 50 x 28 x 8mm	Alligator Clips RED	Aliexpress	5
+Connector	Plastic Handle Test Probe Metal Alligator Clips, 50 x 28 x 8mm	Alligator Clips BLACk	Aliexpress	5
+Connector	Miniature Toggle Switches, SPDT 3A 250VAC/6A 125V, 3-Pin, NO-NC	MTS-102	Aliexpress	10
+Terminal	Наконечник-гильза с изолированным фланцем 0.5мм2, 100pcs/pack	E0506 BLUE	Aliexpress	2
+Terminal	Наконечник-гильза с изолированным фланцем 0.5мм2, 100pcs/pack	E0506 GREEN	Aliexpress	2
+Terminal	Наконечник-гильза с изолированным фланцем 0.5мм2, 100pcs/pack	E0506 YELLOW	Aliexpress	2
+Terminal	Наконечник-гильза с изолированным фланцем 0.5мм2, 100pcs/pack	E0506 RED	Aliexpress	2
+Clamp	Колодка клемна подільна 3А 2.5мм^2, рейка з 12 модулів	e.tc.stand.12.4	E.NEXT	1
+	ARDUINO
+Arduino	Arduino UNO R3 (CH340)	UNO R3 (CH340)	China	1
+Arduino	Годинник реального часу на DS3231 для Raspberry Pi та Arduino (батарейка у комплекті окремо)	RTC DS3231 	China	1
+Arduino	Інтерфейсний модуль MAX485 UART-RS485	MAX485 UART-RS485	China	5
+Arduino	ENC28J60 Ethernet модуль міні	ENC28J60	China	1
+Arduino	Модуль 2 реле 5В з опторозв'язкою	SRD-05VDC-SL-C-2	China	1
+Arduino	Модуль реле 5В 10А з опторозв'язкою 	JQC-3FF-S-Z	China	1
+Arduino	Датчик ваги (тензодатчик) 10кг високоточний	DAT213	China	1
+Arduino	Двоканальний модуль датчиків ваги (тензодатчиків) великий	HX711 	China	1
+Arduino	Сервопривід Tower Pro MG995 360°	MG995 360°	China	1
+Arduino	Імпульсне джерело живлення 5В 2А	WX-DC1205 5В 2А	China	1
+Arduino	LCD Keypad Shield 1602	LCD 1602	China	1

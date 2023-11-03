@@ -22,8 +22,8 @@ class OwnerAdmin(admin.ModelAdmin):
 class WarehouseFlowAdmin(admin.ModelAdmin):
     list_display = ('action_type', 'creation_date')
 
-@admin.register(ItemPlaceQuantity)
-class ItemPlaceQuantityAdmin(admin.ModelAdmin):
+@admin.register(ItemPlace)
+class ItemPlaceAdmin(admin.ModelAdmin):
     list_display = ('item', 'place','quantity', 'owner')
 
 @admin.register(GeneralItem)
@@ -90,38 +90,3 @@ class OrderStatusAdmin(admin.ModelAdmin):
 
 
 
-# class OrderNutInline(StackedInline):
-#     model = OrderNut
-#     extra = 0
-#
-#
-# class OrderBoltInline(StackedInline):
-#     model = OrderBolt
-#     extra = 0
-#
-#
-# class OrderAdmin(admin.ModelAdmin):
-#     inlines = [
-#         OrderNutInline,
-#         OrderBoltInline,
-#     ]
-#
-#     formfield_overrides = {
-#         models.ForeignKey: {"widget": RadioSelect(choices=OrderStatus.objects.all())},
-#     }
-
-
-# admin.site.register(Order, OrderAdmin)
-
-# class ItemPlaceQuantityInline(admin.TabularInline):
-#     model = ItemPlaceQuantity
-#     # extra = 0
-#
-#
-#
-# class WarehouseFlowAdmin(admin.ModelAdmin):
-#     inlines = [
-#         ItemPlaceQuantityInline,
-#     ]
-#
-# admin.register(WarehouseFlow, WarehouseFlowAdmin)
