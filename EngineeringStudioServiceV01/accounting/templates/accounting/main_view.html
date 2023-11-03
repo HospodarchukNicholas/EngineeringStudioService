@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>My Page</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Length</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bolt in bolts %}
+            <tr>
+                <td>{{ bolt.name }}</td>
+                <td>{{ bolt.length }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
