@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounting',
     'engineering_concept_studio',
-    'django_json_widget',
+    # 'django_json_widget',
 ]
 
 MIDDLEWARE = [

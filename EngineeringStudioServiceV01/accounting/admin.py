@@ -7,7 +7,7 @@ from django.forms import ModelForm
 from .models import *
 # from widgets import ImproveRawIdFieldsForm
 from django.contrib.admin.options import StackedInline, TabularInline
-from django_json_widget.widgets import JSONEditorWidget
+# from django_json_widget.widgets import JSONEditorWidget
 
 
 @admin.register(WarehouseActionType)
