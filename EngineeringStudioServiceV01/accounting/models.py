@@ -83,6 +83,14 @@ class OrderStatus(models.Model):
         return self.name
 
 
+class Supplier(models.Model):
+    name = models.CharField(max_length=255, blank=False)
+    link = models.URLField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Order(models.Model):
     order_date = models.DateField(auto_now_add=True, blank=True)
     order_time = models.TimeField(auto_now_add=True, blank=True)
@@ -91,13 +99,6 @@ class Order(models.Model):
     def __str__(self):
         return f'{self.status} - {self.order_date}'
 
-
-class Supplier(models.Model):
-    name = models.CharField(max_length=255, blank=False)
-    link = models.URLField(blank=True)
-
-    def __str__(self):
-        return self.name
 
 
 class OrderItem(models.Model):
@@ -114,7 +115,7 @@ class OrderItem(models.Model):
         unique_together = (('item', 'order', 'supplier'),)
 
     def __str__(self):
-        return f'Table name: {self.table_name}, Object id: {self.object_id}'
+        return f'Item: {self.item}, Object id: {self.order}'
 
 
 class Owner(models.Model):

@@ -1,12 +1,25 @@
 # python manage.py runserver 192.168.0.214:8000
 from django.contrib import admin
-from django import forms
-from django.forms import *
+
+# from django.forms import URLField
 from django.forms import inlineformset_factory, BaseInlineFormSet
 from django.forms import ModelForm
 from .models import *
+from .forms import *
 from django.contrib.admin.options import StackedInline, TabularInline
 
+class OrderItemInline(admin.StackedInline):
+    model = OrderItem
+
+class OrderAdmin(admin.ModelAdmin):
+    form = OrderAdminForm
+    inline = [
+        OrderItemInline,
+    ]
+
+
+admin.site.register(Order, OrderAdmin)
+# admin.site.register(OrderItem)
 
 @admin.register(WarehouseActionType)
 class WarehouseActionTypeAdmin(admin.ModelAdmin):
