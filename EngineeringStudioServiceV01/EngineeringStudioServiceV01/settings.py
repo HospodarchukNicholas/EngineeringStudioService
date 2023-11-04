@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'accounting',
     'engineering_concept_studio',
     # 'django_json_widget',
+    #cdvdv
 ]
 
 MIDDLEWARE = [
