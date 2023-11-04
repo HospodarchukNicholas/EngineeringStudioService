@@ -5,9 +5,7 @@ from django.forms import *
 from django.forms import inlineformset_factory, BaseInlineFormSet
 from django.forms import ModelForm
 from .models import *
-# from widgets import ImproveRawIdFieldsForm
 from django.contrib.admin.options import StackedInline, TabularInline
-# from django_json_widget.widgets import JSONEditorWidget
 
 
 @admin.register(WarehouseActionType)
@@ -17,6 +15,7 @@ class WarehouseActionTypeAdmin(admin.ModelAdmin):
 @admin.register(Owner)
 class OwnerAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
+
 
 @admin.register(WarehouseFlow)
 class WarehouseFlowAdmin(admin.ModelAdmin):
@@ -36,8 +35,14 @@ class AttributeAdmin(admin.ModelAdmin):
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('object_id', 'table_name', 'id',)
+    list_display = ('obj_name', 'object_id', 'table_name', 'id',)
 
+    def obj_name(self, obj):
+        #дозволяє відобразити інформацію з іншої моделі, тобто Item - це
+        #батьківська і стукаючи в потрібну табличку беремо потрібні дані
+        table = apps.get_model('accounting', obj.table_name)
+        obj = table.objects.get(pk=obj.object_id)
+        return f'{obj.name}'
 
 @admin.register(Place)
 class PlaceAdmin(admin.ModelAdmin):

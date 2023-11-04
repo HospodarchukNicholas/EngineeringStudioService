@@ -28,6 +28,7 @@ class WarehouseActionType(models.Model):
         return self.name
 
 class WarehouseFlow(models.Model):
+    #записуємо дії які робимо
     action_type = models.ForeignKey(WarehouseActionType, null=True, blank=True, on_delete=models.CASCADE)
     creation_date = models.DateField(auto_now_add=True, blank=True)
     creation_time = models.TimeField(auto_now_add=True, blank=True)
@@ -37,6 +38,7 @@ class WarehouseFlow(models.Model):
 
 
 class PlaceType(models.Model):
+    #може бути фізичним місцем або проектор і тд.
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True)
 
@@ -54,6 +56,8 @@ class Place(models.Model):
 
 
 class Item(models.Model):
+    #модель в яку записується всі існуючі компоненти, тобто це дозволяє різні
+    #таблиці зібрати в одному місці і отримати до них доступ
     object_id = models.PositiveIntegerField()
     table_name = models.CharField(max_length=255, blank=False)
 

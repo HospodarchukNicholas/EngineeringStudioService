@@ -39,8 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounting',
     'engineering_concept_studio',
-    # 'django_json_widget',
-    #cdvdv
+    'admin_reorder',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'admin_reorder.middleware.ModelAdminReorder',
 ]
 
 ROOT_URLCONF = 'EngineeringStudioServiceV01.urls'
@@ -128,3 +128,26 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ALLOWED_HOSTS = ['192.168.0.214', '127.0.0.1', 'localhost', '*']
 ALLOWED_HOSTS = ['*']
+
+ADMIN_REORDER = (
+    # Keep original label and models
+    # 'sites',
+
+    # Rename app
+    # {'accounting': 'Bolt', 'label': 'Authorisation'},
+
+    # Reorder app models
+    {'accounting': 'auth', 'models': ('auth.User', 'auth.Group')},
+    #
+    # # Exclude models
+    # {'app': 'auth', 'models': ('auth.User', )},
+    #
+    # # Cross-linked models
+    # {'app': 'auth', 'models': ('auth.User', 'sites.Site')},
+    #
+    # # models with custom name
+    # {'app': 'auth', 'models': (
+    #     'auth.Group',
+    #     {'model': 'auth.User', 'label': 'Staff'},
+    # )},
+)
