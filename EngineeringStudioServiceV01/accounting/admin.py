@@ -41,8 +41,11 @@ class ItemAdmin(admin.ModelAdmin):
         #дозволяє відобразити інформацію з іншої моделі, тобто Item - це
         #батьківська і стукаючи в потрібну табличку беремо потрібні дані
         table = apps.get_model('accounting', obj.table_name)
-        obj = table.objects.get(pk=obj.object_id)
-        return f'{obj.name}'
+        obj_name = table.objects.get(pk=obj.object_id).name
+        if obj_name:
+            return obj_name
+        else:
+            None
 
 @admin.register(Place)
 class PlaceAdmin(admin.ModelAdmin):

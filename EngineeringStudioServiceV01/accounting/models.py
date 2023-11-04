@@ -44,6 +44,7 @@ class PlaceType(models.Model):
 
     def __str__(self):
         return self.name
+
 class Place(models.Model):
     name = models.CharField(max_length=255, unique=True)
     type = models.ForeignKey(PlaceType, null=True, blank=True, on_delete=models.CASCADE)
@@ -90,6 +91,7 @@ class Order(models.Model):
     def __str__(self):
         return f'{self.status} - {self.order_date}'
 
+
 class Supplier(models.Model):
     name = models.CharField(max_length=255, blank=False)
     link = models.URLField(blank=True)
@@ -97,12 +99,16 @@ class Supplier(models.Model):
     def __str__(self):
         return self.name
 
+
 class OrderItem(models.Model):
-    #один компонент в замовленні
+    #модель зв'язує один компонент і замовлення
     item = models.ForeignKey(Item, null=True, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, null=True, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.CASCADE, blank=True)
     quantity = models.PositiveIntegerField(blank=False, default=1)
+    product_link = models.URLField(blank=True)
+    invoice = models.URLField(blank=True)
+
 
     class Meta:
         unique_together = (('item', 'order', 'supplier'),)
@@ -110,12 +116,15 @@ class OrderItem(models.Model):
     def __str__(self):
         return f'Table name: {self.table_name}, Object id: {self.object_id}'
 
+
 class Owner(models.Model):
     name = models.CharField(max_length=255, blank=False, unique=True)
     description = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
+
+
 class ItemPlace(models.Model):
     warehouse_flow = models.ForeignKey(WarehouseFlow, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
@@ -134,13 +143,14 @@ class ItemPlace(models.Model):
     def __str__(self):
         return f'Item: {self.item}, Object place: {self.place}'
 
+
 class Attribute(models.Model):
+    #для моделі GeneralItem створюємо необмежену зількість додаткових полів
     name = models.CharField(max_length=255)
     value = models.CharField(max_length=255)
 
     def __str__(self):
         return f'{self.name}: {self.value}'
-
 
 
 class GeneralItem(models.Model):
@@ -279,20 +289,3 @@ class Bolt(models.Model):
 
     def __str__(self):
         return self.name
-
-# class OrderBolt(models.Model):
-#     order = models.ForeignKey(Order, on_delete=models.CASCADE, blank=False)
-#     bolt = models.ForeignKey(Bolt, on_delete=models.CASCADE, blank=False)
-#     quantity = models.PositiveIntegerField()
-#
-#     def __str__(self):
-#         return f'{self.order} - {self.bolt} - {self.quantity}'
-
-
-# class OrderNut(models.Model):
-#     order = models.ForeignKey(Order, on_delete=models.CASCADE, blank=False)
-#     nut = models.ForeignKey(Nut, on_delete=models.CASCADE, blank=False)
-#     quantity = models.PositiveIntegerField()
-#
-#     def __str__(self):
-#         return f'{self.order} - {self.nut} - {self.quantity}'
