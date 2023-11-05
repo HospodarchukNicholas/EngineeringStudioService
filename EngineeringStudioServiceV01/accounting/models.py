@@ -6,9 +6,24 @@ from django.db.models import Avg, Count, Min, Sum
 from django.apps import apps
 import pandas as pd
 import openpyxl
+import gspread
 import os
 
-credentials_file = os.environ.get('AIzaSyCeBPfUYhe9bq4vRj2vpcvtYvJZihFr36o')
+
+def read_google_sheet(url):
+    # Get the Google Sheet API service
+    g = gspread.service_account()
+
+    # Open the Google Sheet by URL
+    sh = g.open_by_url(url)
+
+    # # Get the first worksheet
+    worksheet = sh.sheet1
+    #
+    # # Get all the data from the worksheet
+    data = worksheet.get_all_values()
+
+    return data
 
 
 # отримати модель маючи назву
@@ -29,6 +44,7 @@ credentials_file = os.environ.get('AIzaSyCeBPfUYhe9bq4vRj2vpcvtYvJZihFr36o')
 
 import requests
 
+
 def download_excel_file(url):
     response = requests.get(url)
     if response.status_code == 200:
@@ -43,8 +59,6 @@ class OrderStatus(models.Model):
 
     def __str__(self):
         return self.name
-
-
 
 
 class Order(models.Model):
@@ -62,6 +76,8 @@ class Order(models.Model):
 
     def __str__(self):
         return f'{self.status} - {self.order_date}'
+
+
 class WarehouseActionType(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True)
@@ -119,18 +135,12 @@ class Item(models.Model):
         # ItemPlace.objects.update_or_create(item=self, place='Нерозміщено', quantity=0, owner='Defir')
 
 
-
-
-
 class Supplier(models.Model):
     name = models.CharField(max_length=255, blank=False)
     link = models.URLField(blank=True)
 
     def __str__(self):
         return self.name
-
-
-
 
 
 class OrderItem(models.Model):
