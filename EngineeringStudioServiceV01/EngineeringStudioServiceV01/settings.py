@@ -130,24 +130,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ALLOWED_HOSTS = ['*']
 
 ADMIN_REORDER = (
-    # Keep original label and models
-    # 'sites',
+    'accounting',
+    'engineering_concept_studio',
+    'auth',
 
-    # Rename app
-    # {'accounting': 'Bolt', 'label': 'Authorisation'},
-
-    # Reorder app models
-    {'accounting': 'auth', 'models': ('auth.User', 'auth.Group')},
-    #
-    # # Exclude models
-    # {'app': 'auth', 'models': ('auth.User', )},
-    #
-    # # Cross-linked models
-    # {'app': 'auth', 'models': ('auth.User', 'sites.Site')},
-    #
-    # # models with custom name
-    # {'app': 'auth', 'models': (
-    #     'auth.Group',
-    #     {'model': 'auth.User', 'label': 'Staff'},
-    # )},
+     # Reorder app models
+#     {'accounting': 'auth', 'models': ('auth.User', 'auth.Group')},
+#     #
+#     # # Exclude models
+#     # {'app': 'auth', 'models': ('auth.User', )},
+#     #
+#     # # Cross-linked models
+#     # {'app': 'auth', 'models': ('auth.User', 'sites.Site')},
+#     #
+#     # # models with custom name
+#     # {'app': 'auth', 'models': (
+#     #     'auth.Group',
+#     #     {'model': 'auth.User', 'label': 'Staff'},
+#     # )},
 )

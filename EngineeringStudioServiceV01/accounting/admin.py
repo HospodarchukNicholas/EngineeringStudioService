@@ -8,22 +8,18 @@ from .models import *
 from .forms import *
 from django.contrib.admin.options import StackedInline, TabularInline
 
-class OrderItemInline(admin.StackedInline):
-    model = OrderItem
 
+
+@admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    form = OrderAdminForm
-    inline = [
-        OrderItemInline,
-    ]
+    list_display = ('id', 'order_date', 'status', 'google_sheet_link')
 
-
-admin.site.register(Order, OrderAdmin)
 # admin.site.register(OrderItem)
 
 @admin.register(WarehouseActionType)
 class WarehouseActionTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
+
 
 @admin.register(Owner)
 class OwnerAdmin(admin.ModelAdmin):
@@ -34,31 +30,36 @@ class OwnerAdmin(admin.ModelAdmin):
 class WarehouseFlowAdmin(admin.ModelAdmin):
     list_display = ('action_type', 'creation_date')
 
+
 @admin.register(ItemPlace)
 class ItemPlaceAdmin(admin.ModelAdmin):
-    list_display = ('item', 'place','quantity', 'owner')
+    list_display = ('item', 'place', 'quantity', 'owner')
+
 
 @admin.register(GeneralItem)
 class GeneralItemAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
 
+
 @admin.register(Attribute)
 class AttributeAdmin(admin.ModelAdmin):
     list_display = ('name', 'value')
+
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
     list_display = ('obj_name', 'object_id', 'table_name', 'id',)
 
     def obj_name(self, obj):
-        #дозволяє відобразити інформацію з іншої моделі, тобто Item - це
-        #батьківська і стукаючи в потрібну табличку беремо потрібні дані
+        # дозволяє відобразити інформацію з іншої моделі, тобто Item - це
+        # батьківська і стукаючи в потрібну табличку беремо потрібні дані
         table = apps.get_model('accounting', obj.table_name)
         obj_name = table.objects.get(pk=obj.object_id).name
         if obj_name:
             return obj_name
         else:
             None
+
 
 @admin.register(Place)
 class PlaceAdmin(admin.ModelAdmin):
@@ -108,6 +109,3 @@ class GradeClassAdmin(admin.ModelAdmin):
 @admin.register(OrderStatus)
 class OrderStatusAdmin(admin.ModelAdmin):
     list_display = ('name', 'id',)
-
-
-

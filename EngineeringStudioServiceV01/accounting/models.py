@@ -1,14 +1,21 @@
+# Set-ExecutionPolicy Unrestricted -Scope Process
+# .\venv\Scripts\activate
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Avg, Count, Min, Sum
 from django.apps import apps
+import pandas as pd
+import openpyxl
+import os
 
-#отримати модель маючи назву
+credentials_file = os.environ.get('AIzaSyCeBPfUYhe9bq4vRj2vpcvtYvJZihFr36o')
+
+
+# отримати модель маючи назву
 # apps.get_model('accounting', table_name)
 
 
-
-#реєструємо всі наші бази щоб потім знати яку вибрати з конкретного класу маючи тільки об'єкт
+# реєструємо всі наші бази щоб потім знати яку вибрати з конкретного класу маючи тільки об'єкт
 # class ModelRegistry:
 #     model_classes = {}
 #
@@ -20,6 +27,41 @@ from django.apps import apps
 #         return self.model_classes(model_name)
 # ModelRegistry().register(Item)
 
+import requests
+
+def download_excel_file(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open('excel_file.xlsx', 'wb') as f:
+            f.write(response.content)
+    else:
+        raise Exception(f"Failed to download file from {url}")
+
+
+class OrderStatus(models.Model):
+    name = models.CharField(max_length=255, blank=False)
+
+    def __str__(self):
+        return self.name
+
+
+
+
+class Order(models.Model):
+    order_date = models.DateField(auto_now_add=True, blank=True)
+    order_time = models.TimeField(auto_now_add=True, blank=True)
+    status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
+    google_sheet_link = models.URLField(blank=True, max_length=255)
+
+    def save(self, *args, **kwargs):
+        super(Order, self).save(*args, **kwargs)
+        # table_name = self._meta.model_name
+        # object_id = self.pk
+        # Створюємо новий Item
+        # Item.objects.update_or_create(object_id=object_id, table_name=table_name)
+
+    def __str__(self):
+        return f'{self.status} - {self.order_date}'
 class WarehouseActionType(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True)
@@ -27,8 +69,9 @@ class WarehouseActionType(models.Model):
     def __str__(self):
         return self.name
 
+
 class WarehouseFlow(models.Model):
-    #записуємо дії які робимо
+    # записуємо дії які робимо
     action_type = models.ForeignKey(WarehouseActionType, null=True, blank=True, on_delete=models.CASCADE)
     creation_date = models.DateField(auto_now_add=True, blank=True)
     creation_time = models.TimeField(auto_now_add=True, blank=True)
@@ -38,18 +81,19 @@ class WarehouseFlow(models.Model):
 
 
 class PlaceType(models.Model):
-    #може бути фізичним місцем або проектор і тд.
+    # може бути фізичним місцем або проектор і тд.
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
 
+
 class Place(models.Model):
     name = models.CharField(max_length=255, unique=True)
     type = models.ForeignKey(PlaceType, null=True, blank=True, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
-    #посилання на свій же клас дозволяє зробити гнучку структуру фізичного розташування
+    # посилання на свій же клас дозволяє зробити гнучку структуру фізичного розташування
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -57,14 +101,13 @@ class Place(models.Model):
 
 
 class Item(models.Model):
-    #модель в яку записується всі існуючі компоненти, тобто це дозволяє різні
-    #таблиці зібрати в одному місці і отримати до них доступ
+    # модель в яку записується всі існуючі компоненти, тобто це дозволяє різні
+    # таблиці зібрати в одному місці і отримати до них доступ
     object_id = models.PositiveIntegerField()
     table_name = models.CharField(max_length=255, blank=False)
 
-
     class Meta:
-        unique_together = (('object_id', 'table_name', ),)
+        unique_together = (('object_id', 'table_name',),)
 
     def __str__(self):
         table = apps.get_model('accounting', self.table_name)
@@ -76,11 +119,7 @@ class Item(models.Model):
         # ItemPlace.objects.update_or_create(item=self, place='Нерозміщено', quantity=0, owner='Defir')
 
 
-class OrderStatus(models.Model):
-    name = models.CharField(max_length=255, blank=False)
 
-    def __str__(self):
-        return self.name
 
 
 class Supplier(models.Model):
@@ -91,25 +130,17 @@ class Supplier(models.Model):
         return self.name
 
 
-class Order(models.Model):
-    order_date = models.DateField(auto_now_add=True, blank=True)
-    order_time = models.TimeField(auto_now_add=True, blank=True)
-    status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f'{self.status} - {self.order_date}'
 
 
 
 class OrderItem(models.Model):
-    #модель зв'язує один компонент і замовлення
+    # модель зв'язує один компонент і замовлення
     item = models.ForeignKey(Item, null=True, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, null=True, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, null=True, on_delete=models.CASCADE, blank=True)
     quantity = models.PositiveIntegerField(blank=False, default=1)
     product_link = models.URLField(blank=True)
     invoice = models.URLField(blank=True)
-
 
     class Meta:
         unique_together = (('item', 'order', 'supplier'),)
@@ -136,7 +167,6 @@ class ItemPlace(models.Model):
     class Meta:
         unique_together = (('item', 'place', 'owner',),)
 
-
     def get_total_quantity(item):
         # метод get_total_quantity дозволяє отримати кількість всіх Item в одному місці
         return ItemPlace.objects.filter(item=item).aggregate(Sum('quantity'))['quantity__sum']
@@ -146,7 +176,7 @@ class ItemPlace(models.Model):
 
 
 class Attribute(models.Model):
-    #для моделі GeneralItem створюємо необмежену зількість додаткових полів
+    # для моделі GeneralItem створюємо необмежену зількість додаткових полів
     name = models.CharField(max_length=255)
     value = models.CharField(max_length=255)
 
@@ -159,14 +189,12 @@ class GeneralItem(models.Model):
     attributes = models.ManyToManyField(Attribute, blank=True)
     description = models.TextField(blank=True)
 
-
     def save(self, *args, **kwargs):
         super(GeneralItem, self).save(*args, **kwargs)
         table_name = self._meta.db_table
         object_id = self.pk
-        #Створюємо новий Item
+        # Створюємо новий Item
         Item.objects.update_or_create(object_id=object_id, table_name=table_name)
-
 
     def __str__(self):
         return self.name
@@ -240,7 +268,6 @@ class GradeClass(models.Model):
         return str(self.grade)
 
 
-
 class Nut(models.Model):
     standard = models.ForeignKey(StandardCode, on_delete=models.CASCADE, blank=False)
     size = models.ForeignKey(FastenerSize, on_delete=models.CASCADE, blank=False)
@@ -251,7 +278,7 @@ class Nut(models.Model):
         super(Nut, self).save(*args, **kwargs)
         table_name = self._meta.model_name
         object_id = self.pk
-        #Створюємо новий Item
+        # Створюємо новий Item
         Item.objects.update_or_create(object_id=object_id, table_name=table_name)
 
     @property
@@ -265,8 +292,6 @@ class Nut(models.Model):
         return self.name
 
 
-
-
 class Bolt(models.Model):
     size = models.ForeignKey(FastenerSize, on_delete=models.CASCADE, blank=False)
     standard = models.ForeignKey(StandardCode, on_delete=models.CASCADE, blank=False)
@@ -278,7 +303,7 @@ class Bolt(models.Model):
         super(Bolt, self).save(*args, **kwargs)
         table_name = self._meta.model_name
         object_id = self.pk
-        #Створюємо новий Item
+        # Створюємо новий Item
         Item.objects.update_or_create(object_id=object_id, table_name=table_name)
 
     @property
