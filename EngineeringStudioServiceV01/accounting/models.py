@@ -14,6 +14,7 @@ def read_google_sheet(url):
     # Get the Google Sheet API service
     g = gspread.service_account()
 
+
     # Open the Google Sheet by URL
     sh = g.open_by_url(url)
 
