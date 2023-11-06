@@ -1,58 +1,80 @@
 # Set-ExecutionPolicy Unrestricted -Scope Process
 # .\venv\Scripts\activate
+# from accounting.models import read_google_sheet
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Avg, Count, Min, Sum
 from django.apps import apps
+import json
 import pandas as pd
 import openpyxl
 import gspread
 import os
-
+# отримати модель маючи назву
+# apps.get_model('accounting', table_name)
 
 def read_google_sheet(url):
     # Get the Google Sheet API service
     g = gspread.service_account()
 
-
     # Open the Google Sheet by URL
     sh = g.open_by_url(url)
 
-    # # Get the first worksheet
+    # Get the first worksheet
     worksheet = sh.sheet1
-    #
-    # # Get all the data from the worksheet
+
+    # Get all the data from the worksheet
     data = worksheet.get_all_values()
 
-    return data
+    # Extract column headers
+    headers = data[0]
+
+    # Convert data to a list of dictionaries
+    data_as_dicts = []
+
+    for row in data[1:]:
+        row_dict = dict(zip(headers, row))
+        print(row)
+        print(row_dict)
+        data_as_dicts.append(row_dict)
+
+    return data_as_dicts
 
 
-# отримати модель маючи назву
-# apps.get_model('accounting', table_name)
+
+class ImportDataSetStatus(models.Model):
+    name = models.CharField(max_length=255, blank=False, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
-# реєструємо всі наші бази щоб потім знати яку вибрати з конкретного класу маючи тільки об'єкт
-# class ModelRegistry:
-#     model_classes = {}
-#
-#     def register(self, model_class):
-#         table_name = model_class._meta
-#         self.model_classes[table_name] = model_class
-#
-#     def get_model_classes(self, model_name):
-#         return self.model_classes(model_name)
-# ModelRegistry().register(Item)
+class ImportDataSet(models.Model):
+    import_date = models.DateField(auto_now_add=True, blank=True)
+    import_time = models.TimeField(auto_now_add=True, blank=True)
+    description = models.TextField(blank=True)
+    status = models.ForeignKey(ImportDataSetStatus, on_delete=models.CASCADE, blank=False)
+    google_sheet_link = models.URLField(blank=False, max_length=255)
 
-import requests
+    def save(self, *args, **kwargs):
+        super(ImportDataSet, self).save(*args, **kwargs)
+        sheet_data = read_google_sheet(self.google_sheet_link)
+        for row in sheet_data:
+            ImportData.objects.update_or_create(data_set=self, data=row)
 
 
-def download_excel_file(url):
-    response = requests.get(url)
-    if response.status_code == 200:
-        with open('excel_file.xlsx', 'wb') as f:
-            f.write(response.content)
-    else:
-        raise Exception(f"Failed to download file from {url}")
+    def __str__(self):
+        return f'{self.status} - {self.import_date}'
+
+class ImportData(models.Model):
+    data_set = models.ForeignKey(ImportDataSet, on_delete=models.CASCADE)
+    data = models.JSONField()
+
+    class Meta:
+        unique_together = (('data_set', 'data',),)
+
+    def __str__(self):
+        return json.dumps(self.data)
 
 
 class OrderStatus(models.Model):
@@ -326,3 +348,15 @@ class Bolt(models.Model):
 
     def __str__(self):
         return self.name
+
+# реєструємо всі наші бази щоб потім знати яку вибрати з конкретного класу маючи тільки об'єкт
+# class ModelRegistry:
+#     model_classes = {}
+#
+#     def register(self, model_class):
+#         table_name = model_class._meta
+#         self.model_classes[table_name] = model_class
+#
+#     def get_model_classes(self, model_name):
+#         return self.model_classes(model_name)
+# ModelRegistry().register(Item)

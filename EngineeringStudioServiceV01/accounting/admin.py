@@ -1,4 +1,5 @@
 # python manage.py runserver 192.168.0.214:8000
+# Set-ExecutionPolicy Unrestricted -Scope Process
 from django.contrib import admin
 
 # from django.forms import URLField
@@ -6,9 +7,32 @@ from django.forms import inlineformset_factory, BaseInlineFormSet
 from django.forms import ModelForm
 from .models import *
 from .forms import *
-from django.contrib.admin.options import StackedInline, TabularInline
+# from django.contrib.admin.options import StackedInline, TabularInline
+
+class ImportDataInline(admin.TabularInline):
+    model = ImportData
+    fields = ('id', 'data')
 
 
+class ImportDataSetAdmin(admin.ModelAdmin):
+    inlines = [
+        ImportDataInline
+    ]
+
+admin.site.register(ImportDataSet, ImportDataSetAdmin)
+
+
+# @admin.register(ImportDataSet)
+# class ImportDataSetAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'status', 'import_date', 'import_time')
+#
+# @admin.register(ImportData)
+# class ImportDataAdmin(admin.ModelAdmin):
+#     list_display = ( 'id', 'data')
+
+@admin.register(ImportDataSetStatus)
+class ImportDataSetStatusAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', )
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
