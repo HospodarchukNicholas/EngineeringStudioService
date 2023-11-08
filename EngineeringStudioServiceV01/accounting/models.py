@@ -10,6 +10,8 @@ import pandas as pd
 import openpyxl
 import gspread
 import os
+from django.apps import apps
+from engineering_concept_studio.models import *
 
 
 # отримати модель маючи назву
@@ -63,6 +65,13 @@ class ImportDataSet(models.Model):
         for row in sheet_data:
             ImportData.objects.update_or_create(data_set=self, data=row)
 
+        status = ImportDataSetStatus.objects.filter(name='Warehouse integration').first()
+        if self.status == status:
+            items_to_integrate = ImportData.objects.filter(data_set=self)
+            for item in items_to_integrate:
+                name = item.data['name']
+                GeneralItem.objects.update_or_create(name=name)
+
     def __str__(self):
         return f'{self.status} - {self.import_date}'
 
@@ -71,11 +80,61 @@ class ImportData(models.Model):
     data_set = models.ForeignKey(ImportDataSet, on_delete=models.CASCADE)
     data = models.JSONField()
 
-    class Meta:
-        unique_together = (('data_set', 'data',),)
-
     def __str__(self):
         return json.dumps(self.data)
+
+
+class Attribute(models.Model):
+    # для моделі GeneralItem створюємо необмежену зількість додаткових полів
+    name = models.CharField(max_length=255)
+    value = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f'{self.name}: {self.value}'
+
+
+class ItemCategory(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+
+class GeneralItem(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    attributes = models.ManyToManyField(Attribute, blank=True)
+    description = models.TextField(blank=True)
+    category = models.ForeignKey(ItemCategory, on_delete=models.SET_NULL, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        super(GeneralItem, self).save(*args, **kwargs)
+        table_name = self._meta.model_name
+        object_id = self.pk
+        # Створюємо новий Item
+        Item.objects.update_or_create(object_id=object_id, table_name=table_name)
+
+    def __str__(self):
+        return self.name
+
+
+class Item(models.Model):
+    # модель в яку записується всі існуючі компоненти, тобто це дозволяє різні
+    # таблиці зібрати в одному місці і отримати до них доступ
+    object_id = models.PositiveIntegerField()
+    table_name = models.CharField(max_length=255, blank=False)
+
+    class Meta:
+        unique_together = (('object_id', 'table_name',),)
+
+    def __str__(self):
+        table = apps.get_model('accounting', self.table_name)
+        obj = table.objects.get(pk=self.object_id)
+        return f'{obj.name}'
+
+    def save(self, *args, **kwargs):
+        super(Item, self).save(*args, **kwargs)
+        # ItemPlace.objects.update_or_create(item=self, place='Нерозміщено', quantity=0, owner='Defir')
 
 
 class OrderStatus(models.Model):
@@ -140,25 +199,6 @@ class Place(models.Model):
         return self.name
 
 
-class Item(models.Model):
-    # модель в яку записується всі існуючі компоненти, тобто це дозволяє різні
-    # таблиці зібрати в одному місці і отримати до них доступ
-    object_id = models.PositiveIntegerField()
-    table_name = models.CharField(max_length=255, blank=False)
-
-    class Meta:
-        unique_together = (('object_id', 'table_name',),)
-
-    def __str__(self):
-        table = apps.get_model('accounting', self.table_name)
-        obj = table.objects.get(pk=self.object_id)
-        return f'{obj.name}'
-
-    def save(self, *args, **kwargs):
-        super(Item, self).save(*args, **kwargs)
-        # ItemPlace.objects.update_or_create(item=self, place='Нерозміщено', quantity=0, owner='Defir')
-
-
 class Supplier(models.Model):
     name = models.CharField(max_length=255, blank=False)
     link = models.URLField(blank=True)
@@ -207,40 +247,6 @@ class ItemPlace(models.Model):
 
     def __str__(self):
         return f'Item: {self.item}, Object place: {self.place}'
-
-
-class Attribute(models.Model):
-    # для моделі GeneralItem створюємо необмежену зількість додаткових полів
-    name = models.CharField(max_length=255)
-    value = models.CharField(max_length=255)
-
-    def __str__(self):
-        return f'{self.name}: {self.value}'
-
-
-class ItemCategory(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
-
-
-class GeneralItem(models.Model):
-    name = models.CharField(max_length=255)
-    attributes = models.ManyToManyField(Attribute, blank=True)
-    description = models.TextField(blank=True)
-    category = models.ForeignKey(ItemCategory, on_delete=models.SET_NULL, blank=True, null=True)
-
-    def save(self, *args, **kwargs):
-        super(GeneralItem, self).save(*args, **kwargs)
-        table_name = self._meta.db_table
-        object_id = self.pk
-        # Створюємо новий Item
-        Item.objects.update_or_create(object_id=object_id, table_name=table_name)
-
-    def __str__(self):
-        return self.name
 
 
 class FastenerSize(models.Model):

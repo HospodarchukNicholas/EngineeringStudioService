@@ -9,15 +9,21 @@ from .models import *
 from .forms import *
 # from django.contrib.admin.options import StackedInline, TabularInline
 
+
+
+
 class ImportDataInline(admin.TabularInline):
     model = ImportData
     fields = ('id', 'data')
+    extra = 0
 
 
 class ImportDataSetAdmin(admin.ModelAdmin):
     inlines = [
         ImportDataInline
     ]
+    list_display = ('description', 'id',  'status')
+
 
 admin.site.register(ImportDataSet, ImportDataSetAdmin)
 
@@ -33,6 +39,7 @@ admin.site.register(ImportDataSet, ImportDataSetAdmin)
 @admin.register(ImportDataSetStatus)
 class ImportDataSetStatusAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', )
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -62,7 +69,7 @@ class ItemPlaceAdmin(admin.ModelAdmin):
 
 @admin.register(GeneralItem)
 class GeneralItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description')
+    list_display = ('id', )
 
 
 @admin.register(Attribute)

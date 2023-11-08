@@ -1,4 +1,6 @@
 from django.db import models
+from accounting.models import *
+
 
 class Project(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -6,6 +8,7 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Assembly(models.Model):
     name = models.CharField(max_length=255, unique=True)
