@@ -10,6 +10,8 @@ import pandas as pd
 import openpyxl
 import gspread
 import os
+
+
 # отримати модель маючи назву
 # apps.get_model('accounting', table_name)
 
@@ -41,7 +43,6 @@ def read_google_sheet(url):
     return data_as_dicts
 
 
-
 class ImportDataSetStatus(models.Model):
     name = models.CharField(max_length=255, blank=False, unique=True)
 
@@ -62,9 +63,9 @@ class ImportDataSet(models.Model):
         for row in sheet_data:
             ImportData.objects.update_or_create(data_set=self, data=row)
 
-
     def __str__(self):
         return f'{self.status} - {self.import_date}'
+
 
 class ImportData(models.Model):
     data_set = models.ForeignKey(ImportDataSet, on_delete=models.CASCADE)
@@ -217,10 +218,19 @@ class Attribute(models.Model):
         return f'{self.name}: {self.value}'
 
 
+class ItemCategory(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+
 class GeneralItem(models.Model):
     name = models.CharField(max_length=255)
     attributes = models.ManyToManyField(Attribute, blank=True)
     description = models.TextField(blank=True)
+    category = models.ForeignKey(ItemCategory, on_delete=models.SET_NULL, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         super(GeneralItem, self).save(*args, **kwargs)
@@ -281,14 +291,6 @@ class StandardCode(models.Model):
     @property
     def name(self):
         return f'{self.standard} {self.code}'
-
-    def __str__(self):
-        return self.name
-
-
-class ItemCategory(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
