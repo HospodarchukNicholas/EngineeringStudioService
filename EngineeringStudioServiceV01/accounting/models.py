@@ -45,6 +45,25 @@ def read_google_sheet(url):
     return data_as_dicts
 
 
+# class PlaceType(models.Model):
+#     # може бути фізичним місцем або проектор і тд.
+#     name = models.CharField(max_length=255, unique=True)
+#     description = models.TextField(blank=True)
+#
+#     def __str__(self):
+#         return self.name
+
+
+class Place(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    # type = models.ForeignKey(PlaceType, null=True, blank=True, on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
+    # посилання на свій же клас дозволяє зробити гнучку структуру фізичного розташування
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
 class ImportDataSetStatus(models.Model):
     name = models.CharField(max_length=255, blank=False, unique=True)
 
@@ -70,7 +89,16 @@ class ImportDataSet(models.Model):
             items_to_integrate = ImportData.objects.filter(data_set=self)
             for item in items_to_integrate:
                 name = item.data['name']
-                GeneralItem.objects.update_or_create(name=name)
+                gi = GeneralItem.objects.update_or_create(name=name)
+                place = item.data['place']
+                if not place:
+                    place = 'Warehouse'
+                place = Place.objects.update_or_create(name=place)
+                # item = Item.objects.get(object_id=)
+                # quantity = str(item.data['quantity'])
+                # ItemPlace.objects.update_or_create(item=i, place=place, quantity=quantity)
+
+
 
     def __str__(self):
         return f'{self.status} - {self.import_date}'
@@ -179,24 +207,7 @@ class WarehouseFlow(models.Model):
         return f'{self.action_type}: {self.creation_date}'
 
 
-class PlaceType(models.Model):
-    # може бути фізичним місцем або проектор і тд.
-    name = models.CharField(max_length=255, unique=True)
-    description = models.TextField(blank=True)
 
-    def __str__(self):
-        return self.name
-
-
-class Place(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    type = models.ForeignKey(PlaceType, null=True, blank=True, on_delete=models.CASCADE)
-    description = models.TextField(blank=True)
-    # посилання на свій же клас дозволяє зробити гнучку структуру фізичного розташування
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
 
 
 class Supplier(models.Model):
@@ -232,11 +243,11 @@ class Owner(models.Model):
 
 
 class ItemPlace(models.Model):
-    warehouse_flow = models.ForeignKey(WarehouseFlow, on_delete=models.CASCADE)
+    # warehouse_flow = models.ForeignKey(WarehouseFlow, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     place = models.ForeignKey(Place, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(blank=False, default=0)
-    owner = models.ForeignKey(Owner, on_delete=models.CASCADE)
+    owner = models.ForeignKey(Owner, on_delete=models.CASCADE, blank=True)
 
     class Meta:
         unique_together = (('item', 'place', 'owner',),)

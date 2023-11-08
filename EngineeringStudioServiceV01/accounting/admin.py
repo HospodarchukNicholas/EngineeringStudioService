@@ -69,7 +69,7 @@ class ItemPlaceAdmin(admin.ModelAdmin):
 
 @admin.register(GeneralItem)
 class GeneralItemAdmin(admin.ModelAdmin):
-    list_display = ('id', )
+    list_display = ('id','name', 'category')
 
 
 @admin.register(Attribute)
