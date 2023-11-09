@@ -1,13 +1,12 @@
 # Set-ExecutionPolicy Unrestricted -Scope Process
 # .\venv\Scripts\activate
 # from accounting.models import read_google_sheet
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Avg, Count, Min, Sum
 from django.apps import apps
 import json
-import pandas as pd
-import openpyxl
 import gspread
 import os
 # отримати модель маючи назву
@@ -55,12 +54,66 @@ class ImportDataSet(models.Model):
     description = models.TextField(blank=True)
     status = models.ForeignKey(ImportDataSetStatus, on_delete=models.CASCADE, blank=False)
     google_sheet_link = models.URLField(blank=False, max_length=255)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,)
 
     def save(self, *args, **kwargs):
+        update_state = False
+        if self.pk:
+            update_state = True
+            # This is an update, modify the data differently for updates
+            # Modify fields here as needed for updates
         super(ImportDataSet, self).save(*args, **kwargs)
-        sheet_data = read_google_sheet(self.google_sheet_link)
-        for row in sheet_data:
-            ImportData.objects.update_or_create(data_set=self, data=row)
+        if not update_state:
+            # зберігаємо дані з google таблиці тільки якщо цього запису ще не було
+            sheet_data = read_google_sheet(self.google_sheet_link)
+            for row in sheet_data:
+                ImportData.objects.update_or_create(data_set=self, data=row)
+
+
+        # якщо змінюємо на цей статус то наші компоненти розподіляються по таблицях
+        status_1, status_1_created = ImportDataSetStatus.objects.update_or_create(name='Інтеграція на склад')
+        status_2, status_2_created = ImportDataSetStatus.objects.update_or_create(name='Нове надходження')
+        # status = ImportDataSetStatus.objects.filter(name='Нове надходження').first()
+        if self.status == status_1:
+            items_to_integrate = ImportData.objects.filter(data_set=self)
+            for item_to_integrate in items_to_integrate:
+                name = item_to_integrate.data['name']
+
+
+                place_name = item_to_integrate.data['place']
+                if not place_name:
+                    place_name = 'Warehouse'
+                place, place_created = Place.objects.update_or_create(name=place_name)
+
+                category_name = item_to_integrate.data['category']
+                if not category_name:
+                    category_name = 'Without Category'
+                category, category_created = ItemCategory.objects.update_or_create(name=category_name)
+
+
+                # створюємо об'єкт GeneralItem
+                general_item, general_item_created = GeneralItem.objects.update_or_create(name=name, category=category)
+                table_name = general_item._meta.model_name
+
+                # шукаємо відповідний об'єкт Item
+                item = Item.objects.get(object_id=general_item.id, table_name=table_name)
+
+                owner_name = item_to_integrate.data['owner']
+                if not owner_name:
+                    owner_name = 'Defir'
+                owner, owner_created = Owner.objects.update_or_create(name=owner_name)
+
+                # перевіряємо записи і додаємо кількість, якщо вона вже є
+                quantity = int(item_to_integrate.data['quantity'])
+                exis_quantity = ItemPlace.objects.get(item=item, place=place, owner=owner).quantity
+                if not quantity:
+                    quantity = 0
+                quantity += exis_quantity
+
+                item_place, item_place_created = ItemPlace.objects.update_or_create(item=item, place=place, owner=owner)
+                if item_place:
+                    item_place.quantity = quantity
+                    item_place.save()
 
 
     def __str__(self):
@@ -139,11 +192,20 @@ class Place(models.Model):
         return self.name
 
 
+class ItemCategory(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
 class Item(models.Model):
     # модель в яку записується всі існуючі компоненти, тобто це дозволяє різні
     # таблиці зібрати в одному місці і отримати до них доступ
     object_id = models.PositiveIntegerField()
     table_name = models.CharField(max_length=255, blank=False)
+    # category = models.ForeignKey(ItemCategory, on_delete=models.SET_NULL, null=True, blank=True)
+
 
     class Meta:
         unique_together = (('object_id', 'table_name',),)
@@ -191,7 +253,7 @@ class Owner(models.Model):
 
 
 class ItemPlace(models.Model):
-    warehouse_flow = models.ForeignKey(WarehouseFlow, on_delete=models.CASCADE)
+    # warehouse_flow = models.ForeignKey(WarehouseFlow, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     place = models.ForeignKey(Place, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(blank=False, default=0)
@@ -221,10 +283,11 @@ class GeneralItem(models.Model):
     name = models.CharField(max_length=255)
     attributes = models.ManyToManyField(Attribute, blank=True)
     description = models.TextField(blank=True)
+    category = models.ForeignKey(ItemCategory, on_delete=models.SET_NULL, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         super(GeneralItem, self).save(*args, **kwargs)
-        table_name = self._meta.db_table
+        table_name = self._meta.model_name
         object_id = self.pk
         # Створюємо новий Item
         Item.objects.update_or_create(object_id=object_id, table_name=table_name)
@@ -281,14 +344,6 @@ class StandardCode(models.Model):
     @property
     def name(self):
         return f'{self.standard} {self.code}'
-
-    def __str__(self):
-        return self.name
-
-
-class ItemCategory(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name

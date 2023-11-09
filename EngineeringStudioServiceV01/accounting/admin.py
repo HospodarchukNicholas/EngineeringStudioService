@@ -9,15 +9,23 @@ from .models import *
 from .forms import *
 # from django.contrib.admin.options import StackedInline, TabularInline
 
+
+# @admin.action(description="Warehouse Integration")
+# def WarehouseIntegration(modeladmin, request, queryset):
+#     status = ImportDataSetStatus.objects.filter(name='Warehouse integration').first()
+#     queryset.update(status=status)
+
 class ImportDataInline(admin.TabularInline):
     model = ImportData
-    fields = ('id', 'data')
+    fields = ('id', )
 
 
 class ImportDataSetAdmin(admin.ModelAdmin):
     inlines = [
         ImportDataInline
     ]
+    list_display = ( 'description', 'status', 'id' )
+    # actions = [WarehouseIntegration]
 
 admin.site.register(ImportDataSet, ImportDataSetAdmin)
 
@@ -34,15 +42,15 @@ admin.site.register(ImportDataSet, ImportDataSetAdmin)
 class ImportDataSetStatusAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', )
 
-@admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'order_date', 'status', 'google_sheet_link')
+# @admin.register(Order)
+# class OrderAdmin(admin.ModelAdmin):
+#     list_display = ('id', 'order_date', 'status', 'google_sheet_link')
 
 # admin.site.register(OrderItem)
 
-@admin.register(WarehouseActionType)
-class WarehouseActionTypeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description')
+# @admin.register(WarehouseActionType)
+# class WarehouseActionTypeAdmin(admin.ModelAdmin):
+#     list_display = ('name', 'description')
 
 
 @admin.register(Owner)
@@ -50,19 +58,19 @@ class OwnerAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
 
 
-@admin.register(WarehouseFlow)
-class WarehouseFlowAdmin(admin.ModelAdmin):
-    list_display = ('action_type', 'creation_date')
+# @admin.register(WarehouseFlow)
+# class WarehouseFlowAdmin(admin.ModelAdmin):
+#     list_display = ('action_type', 'creation_date')
 
 
 @admin.register(ItemPlace)
 class ItemPlaceAdmin(admin.ModelAdmin):
-    list_display = ('item', 'place', 'quantity', 'owner')
+    list_display = ('item', 'place', 'quantity', 'owner', 'id')
 
 
 @admin.register(GeneralItem)
 class GeneralItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description')
+    list_display = ('name', 'id', 'description')
 
 
 @admin.register(Attribute)
@@ -72,9 +80,9 @@ class AttributeAdmin(admin.ModelAdmin):
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('obj_name', 'object_id', 'table_name', 'id',)
+    list_display = ('item_name', 'object_id', 'table_name', 'id', 'item_places',)
 
-    def obj_name(self, obj):
+    def item_name(self, obj):
         # дозволяє відобразити інформацію з іншої моделі, тобто Item - це
         # батьківська і стукаючи в потрібну табличку беремо потрібні дані
         table = apps.get_model('accounting', obj.table_name)
@@ -83,6 +91,19 @@ class ItemAdmin(admin.ModelAdmin):
             return obj_name
         else:
             None
+    def item_places(self, obj):
+        item_places = ItemPlace.objects.filter(item=obj.id)
+        places_name = item_places.values_list('place__name', flat=True)
+        # place_quantity = item_places.values_list('place__quantity', flat=True)
+        places_name = ', '.join(places_name)
+        if places_name:
+            return places_name
+
+    # def total_quantity(self, obj):
+    #     item_total_quantity = ItemPlace.get_total_quantity(obj)
+    #     if item_total_quantity:
+    #         return item_total_quantity
+
 
 
 @admin.register(Place)
