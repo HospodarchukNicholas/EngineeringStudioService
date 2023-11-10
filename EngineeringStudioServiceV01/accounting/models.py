@@ -39,13 +39,63 @@ def read_google_sheet(url):
 
     return data_as_dicts
 
+class Supplier(models.Model):
+    name = models.CharField(max_length=255, blank=False)
+    link = models.URLField(blank=True)
 
+    def __str__(self):
+        return self.name
+class ItemCategory(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+
+class ShoppingCart(models.Model):
+
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        # ('submitted', 'Submitted'),
+        ('approved', 'Approved'),
+        # ('processed', 'Processed'),
+        # ('shipped', 'Shipped'),
+        ('completed', 'Completed'),
+    ]
+
+    purpose = models.CharField(max_length=255)
+    order_date = models.DateField(auto_now_add=True, blank=True)
+    order_time = models.TimeField(auto_now_add=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    google_sheet_link = models.URLField(blank=True, max_length=255)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,)
+
+    def __str__(self):
+        return f'{self.name} - {self.status}'
+
+class ShoppingCartItem(models.Model):
+    cart = models.ForeignKey(ShoppingCart, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    category = models.ForeignKey(ItemCategory, on_delete=models.SET_NULL, null=True, blank=True)
+    quantity = models.PositiveIntegerField(blank=False, default=1)
+    product_link = models.URLField(blank=True)
+    supplier = models.ForeignKey(Supplier, null=True, on_delete=models.CASCADE, blank=True)
+    brand = models.CharField(max_length=255, blank=True)
+    item_number = models.CharField(max_length=255, blank=True)
+    note = models.CharField(max_length=255, blank=True)
+    invoice_link = models.URLField(blank=True)
+
+    def __str__(self):
+        return self.name
 
 class ImportDataSetStatus(models.Model):
     name = models.CharField(max_length=255, blank=False, unique=True)
 
     def __str__(self):
         return self.name
+
+
 
 
 class ImportDataSet(models.Model):
@@ -192,12 +242,7 @@ class Place(models.Model):
         return self.name
 
 
-class ItemCategory(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return self.name
 
 class Item(models.Model):
     # модель в яку записується всі існуючі компоненти, тобто це дозволяє різні
@@ -220,12 +265,7 @@ class Item(models.Model):
         # ItemPlace.objects.update_or_create(item=self, place='Нерозміщено', quantity=0, owner='Defir')
 
 
-class Supplier(models.Model):
-    name = models.CharField(max_length=255, blank=False)
-    link = models.URLField(blank=True)
 
-    def __str__(self):
-        return self.name
 
 
 class OrderItem(models.Model):
@@ -258,6 +298,7 @@ class ItemPlace(models.Model):
     place = models.ForeignKey(Place, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(blank=False, default=0)
     owner = models.ForeignKey(Owner, on_delete=models.CASCADE)
+    is_used = models.BooleanField(default=False)
 
     class Meta:
         unique_together = (('item', 'place', 'owner',),)
@@ -271,7 +312,7 @@ class ItemPlace(models.Model):
 
 
 class Attribute(models.Model):
-    # для моделі GeneralItem створюємо необмежену зількість додаткових полів
+    # для моделі GeneralItem створюємо необмежену кількість додаткових полів
     name = models.CharField(max_length=255)
     value = models.CharField(max_length=255)
 
