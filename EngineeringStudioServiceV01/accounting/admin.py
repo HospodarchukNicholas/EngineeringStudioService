@@ -16,12 +16,18 @@ admin.site.site_title = 'DefirWarehouse_v0.2'
 #     queryset.update(status=status)
 
 
-
-
-class ShoppingCartItemInline(admin.TabularInline):
+class ShoppingCartItemInline(admin.StackedInline):
     model = ShoppingCartItem
-    fields = ('id', )
+    fields = ('name', 'category', 'quantity', 'product_link', 'supplier', 'brand', 'item_number', 'note', 'invoice_link', 'storage_place')
+    # list_display = ('name', 'category', 'quantity')
+    extra = 1
+    autocomplete_fields = ['category', 'storage_place', 'supplier']
 
+    # def display_image(self, obj):
+    #     return obj.image.url if obj.image else None
+
+    # display_image.short_description = 'Image'
+    # readonly_fields = ['image']
 
 class ShoppingCartAdmin(admin.ModelAdmin):
     inlines = [
@@ -34,23 +40,28 @@ admin.site.register(ShoppingCartItem)
 
 
 
-class ImportDataInline(admin.TabularInline):
-    model = ImportData
-    fields = ('id', )
+@admin.register(Supplier)
+class SupplierAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+    #дозволяє створити адмін модель але при цьому не відображати її в адмін панелі. Тобто дозволяє створювати обєкти з інших форм
+    def get_model_perms(self, request):
+        return {}
+
+@admin.register(Place)
+class PlaceAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+    #дозволяє створити адмін модель але при цьому не відображати її в адмін панелі. Тобто дозволяє створювати обєкти з інших форм
+    def get_model_perms(self, request):
+        return {}
 
 
-class ImportDataSetAdmin(admin.ModelAdmin):
-    inlines = [
-        ImportDataInline
-    ]
-    list_display = ( 'description', 'status', 'id' )
-    # actions = [WarehouseIntegration]
-
-admin.site.register(ImportDataSet, ImportDataSetAdmin)
-
-
-
-
+@admin.register(ItemCategory)
+class ItemCategoryAdmin(admin.ModelAdmin):
+    #обов'язково потрібно добавляти в батькіську модель search_fields, щоб можна було зробити автозамовненння
+    search_fields = ['name']
+    #дозволяє створити адмін модель але при цьому не відображати її в адмін панелі. Тобто дозволяє створювати обєкти з інших форм
+    def get_model_perms(self, request):
+        return {}
 
 
 @admin.register(ItemPlace)
@@ -65,40 +76,64 @@ class GeneralItemAdmin(admin.ModelAdmin):
 
 @admin.register(Attribute)
 class AttributeAdmin(admin.ModelAdmin):
+    #дозволяє створити адмін модель але при цьому не відображати її в адмін панелі. Тобто дозволяє створювати обєкти з інших форм
     # list_display = ('name', 'value')
     def get_model_perms(self, request):
         return {}
 
 
+# class ImportDataInline(admin.TabularInline):
+#     model = ImportData
+#     fields = ('id', )
+#
+#
+# class ImportDataSetAdmin(admin.ModelAdmin):
+#     inlines = [
+#         ImportDataInline
+#     ]
+#     list_display = ( 'description', 'status', 'id' )
+#     # actions = [WarehouseIntegration]
+#
+# admin.site.register(ImportDataSet, ImportDataSetAdmin)
 
-@admin.register(Item)
-class ItemAdmin(admin.ModelAdmin):
-    list_display = ('item_name', 'object_id', 'item_places', 'total_quantity')
 
-    def item_name(self, obj):
-        # дозволяє відобразити інформацію з іншої моделі, тобто Item - це
-        # батьківська і стукаючи в потрібну табличку беремо потрібні дані
-        table = apps.get_model('accounting', obj.table_name)
-        obj_name = table.objects.get(pk=obj.object_id).name
-        if obj_name:
-            return obj_name
-        else:
-            None
-    def item_places(self, obj):
-        item_places = ItemPlace.objects.filter(item=obj.id)
-        places_name = item_places.values_list('place__name', flat=True)
-        place_quantity = item_places.values_list('quantity', flat=True)
+# @admin.register(ItemPlace)
+# class AttributeAdmin(admin.ModelAdmin):
+#     #дозволяє створити адмін модель але при цьому не відображати її в адмін панелі. Тобто дозволяє створювати обєкти з інших форм
+#     # list_display = ('name', 'value')
+#     def get_model_perms(self, request):
+#         return {}
 
-        places_info = zip(item_places.values_list('place__name', flat=True),
-                          item_places.values_list('quantity', flat=True))
-        places_str = ', '.join([f"{name}: {quantity} pcs" for name, quantity in places_info])
-        if places_str:
-            return places_str
 
-    def total_quantity(self, obj):
-        item_places = ItemPlace.objects.filter(item=obj.id)
-        total_quantity = item_places.aggregate(total_quantity=Sum('quantity'))['total_quantity']
-        return total_quantity
+
+# @admin.register(Item)
+# class ItemAdmin(admin.ModelAdmin):
+#     list_display = ('item_name', 'object_id', 'item_places', 'total_quantity')
+#
+#     def item_name(self, obj):
+#         # дозволяє відобразити інформацію з іншої моделі, тобто Item - це
+#         # батьківська і стукаючи в потрібну табличку беремо потрібні дані
+#         table = apps.get_model('accounting', obj.table_name)
+#         obj_name = table.objects.get(pk=obj.object_id).name
+#         if obj_name:
+#             return obj_name
+#         else:
+#             None
+#     def item_places(self, obj):
+#         item_places = ItemPlace.objects.filter(item=obj.id)
+#         places_name = item_places.values_list('place__name', flat=True)
+#         place_quantity = item_places.values_list('quantity', flat=True)
+#
+#         places_info = zip(item_places.values_list('place__name', flat=True),
+#                           item_places.values_list('quantity', flat=True))
+#         places_str = ', '.join([f"{name}: {quantity} pcs" for name, quantity in places_info])
+#         if places_str:
+#             return places_str
+#
+#     def total_quantity(self, obj):
+#         item_places = ItemPlace.objects.filter(item=obj.id)
+#         total_quantity = item_places.aggregate(total_quantity=Sum('quantity'))['total_quantity']
+#         return total_quantity
     # def total_quantity(self, obj):
     #     item_total_quantity = ItemPlace.get_total_quantity(obj)
     #     if item_total_quantity:

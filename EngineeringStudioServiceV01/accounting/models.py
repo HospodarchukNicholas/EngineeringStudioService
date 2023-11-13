@@ -43,6 +43,14 @@ class Supplier(models.Model):
     name = models.CharField(max_length=255, blank=False)
     link = models.URLField(blank=True)
 
+    def normalize_name(self):
+        # зберігаємо тільки Upper щоб уникнути дублювання даних
+        self.name = self.name.lower()
+
+    def save(self, *args, **kwargs):
+        self.normalize_name()
+        super(Supplier, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 class ItemCategory(models.Model):
@@ -52,50 +60,11 @@ class ItemCategory(models.Model):
     def __str__(self):
         return self.name
 
-
-class ShoppingCart(models.Model):
-
-    STATUS_CHOICES = [
-        ('draft', 'Draft'),
-        # ('submitted', 'Submitted'),
-        ('approved', 'Approved'),
-        # ('processed', 'Processed'),
-        # ('shipped', 'Shipped'),
-        ('completed', 'Completed'),
-    ]
-
-    purpose = models.CharField(max_length=255)
-    order_date = models.DateField(auto_now_add=True, blank=True)
-    order_time = models.TimeField(auto_now_add=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    google_sheet_link = models.URLField(blank=True, max_length=255)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,)
-
-    def __str__(self):
-        return f'{self.name} - {self.status}'
-
-class ShoppingCartItem(models.Model):
-    cart = models.ForeignKey(ShoppingCart, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    category = models.ForeignKey(ItemCategory, on_delete=models.SET_NULL, null=True, blank=True)
-    quantity = models.PositiveIntegerField(blank=False, default=1)
-    product_link = models.URLField(blank=True)
-    supplier = models.ForeignKey(Supplier, null=True, on_delete=models.CASCADE, blank=True)
-    brand = models.CharField(max_length=255, blank=True)
-    item_number = models.CharField(max_length=255, blank=True)
-    note = models.CharField(max_length=255, blank=True)
-    invoice_link = models.URLField(blank=True)
-
-    def __str__(self):
-        return self.name
-
 class ImportDataSetStatus(models.Model):
     name = models.CharField(max_length=255, blank=False, unique=True)
 
     def __str__(self):
         return self.name
-
-
 
 
 class ImportDataSet(models.Model):
@@ -288,6 +257,14 @@ class Owner(models.Model):
     name = models.CharField(max_length=255, blank=False, unique=True)
     description = models.TextField(blank=True)
 
+    def normalize_name(self):
+        # зберігаємо тільки Upper щоб уникнути дублювання даних
+        self.name = self.name.upper()
+
+    def save(self, *args, **kwargs):
+        self.normalize_name()
+        super(Owner, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
@@ -361,24 +338,26 @@ class ItemMaterial(models.Model):
         return self.name
 
 
-class Standard(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    description = models.TextField(blank=True)
-
-    def normalize_name(self):
-        self.name = self.name.upper()
-
-    def save(self, *args, **kwargs):
-        self.normalize_name()
-        super(Standard, self).save(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
+# class Standard(models.Model):
+#     name = models.CharField(max_length=255, unique=True)
+#     description = models.TextField(blank=True)
+#
+#     def normalize_name(self):
+#             зберігаємо тільки Upper
+#         self.name = self.name.upper()
+#
+#     def save(self, *args, **kwargs):
+#         self.normalize_name()
+#         super(Standard, self).save(*args, **kwargs)
+#
+#     def __str__(self):
+#         return self.name
 
 
 class StandardCode(models.Model):
     # name = models.CharField(max_length=255, unique=True)
-    standard = models.ForeignKey(Standard, on_delete=models.CASCADE)
+    # standard = models.ForeignKey(Standard, on_delete=models.CASCADE)
+    standard = models.CharField(max_length=255)
     code = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
@@ -456,3 +435,48 @@ class Bolt(models.Model):
 #     def get_model_classes(self, model_name):
 #         return self.model_classes(model_name)
 # ModelRegistry().register(Item)
+
+
+class ShoppingCart(models.Model):
+
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        # ('submitted', 'Submitted'),
+        ('approved', 'Approved'),
+        # ('processed', 'Processed'),
+        # ('shipped', 'Shipped'),
+        ('completed', 'Completed'),
+    ]
+
+    purpose = models.CharField(max_length=255, help_text='Необхідно коротко описати призначення '
+                                                         'даного замовлення.'
+                                                         )
+    order_date = models.DateField(auto_now_add=True, blank=True)
+    order_time = models.TimeField(auto_now_add=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft', help_text='Статус впливає як будуть оброблятись дані. Draft: це як шаблон, '
+                                                         'програма створює записи для кожного компоненти та саму '
+                                                         'корзину. Approved: замовлення сформовано але ще на етапі оформлення.'
+                                                         ' Completed: всі компоненти доставленні, програма генерує для них записи,'
+                                                         ' які відповідають реальному місцезнашодженню та кількості')
+    google_sheet_link = models.URLField(blank=True, max_length=255, help_text='Якщо добавити посилання - програма спробує автоматично згенерувати всі компоненти та добавити в корзину')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, help_text='Поки це додаткова опція, це поле буде запонюватись автоматично')
+
+    def __str__(self):
+        return f'Замовлення №{self.id}: {self.purpose}. Статус: {self.status}'
+
+class ShoppingCartItem(models.Model):
+    cart = models.ForeignKey(ShoppingCart, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    category = models.ForeignKey(ItemCategory, on_delete=models.SET_NULL, null=True, blank=True)
+    quantity = models.PositiveIntegerField(blank=False, default=1)
+    product_link = models.URLField(blank=True)
+    supplier = models.ForeignKey(Supplier, null=True, on_delete=models.CASCADE, blank=True)
+    brand = models.CharField(max_length=255, blank=True)
+    item_number = models.CharField(max_length=255, blank=True)
+    note = models.CharField(max_length=255, blank=True)
+    invoice_link = models.URLField(blank=True)
+    # image = models.ImageField(upload_to='H:\EngineeringStudioService\Images', blank=True, null=True)
+    storage_place = models.ForeignKey(Place, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
